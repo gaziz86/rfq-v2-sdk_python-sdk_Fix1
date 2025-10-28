@@ -1,46 +1,51 @@
-# Market Maker Client SDK
+# Jupiter RFQ v2 Market Maker SDK
 
-Rust SDK for Jupiter RFQ market maker integration via gRPC streaming.
+SDKs for Jupiter's RFQ v2 Market Maker service via gRPC streaming. Available in **Rust** and **Python**.
 
 ## Features
 
-- **Bidirectional streaming** - Send quotes and receive swap requests simultaneously
-- **Automatic sync** - Sequence number synchronization on connect
-- **Transaction signing** - Sign and submit Solana transactions
-- **Production ready** - HTTP/2 with TLS, connection health monitoring
+- Bidirectional streaming for quotes and swaps
+- Real-time quote submission with custom pricing
+- Solana transaction signing
+- Type-safe APIs with builder patterns
+- Production ready with TLS and health monitoring
 
-## Quick Start
+## SDKs
 
-Set environment variables:
-- `MM_MAKER_ID` - Your maker identifier
-- `MM_AUTH_TOKEN` - JWT authentication token
-- `SOLANA_PRIVATE_KEY` - Base58 encoded private key
-- `BIRDEYE_API_KEY` - Birdeye API key (optional)
+### Rust SDK
 
-Run the example:
+High-performance async SDK built on Tokio. See [`rust-sdk/README.md`](rust-sdk/README.md)
+
 ```bash
+cd rust-sdk
 cargo run --example production_streaming
 ```
 
-## Architecture
+**Requirements:** Rust 1.70+, Tokio runtime
 
-- **Client** - Manages gRPC connection with HTTP/2 and TLS
-- **QuoteStreamHandle** - Bidirectional quote streaming with stats
-- **SwapStreamHandle** - Bidirectional swap streaming with keepalive
-- **Builders** - Type-safe quote construction with validation
-- **Statistics** - Connection health and message tracking
+---
 
-## Known Issues
+### Python SDK
 
-- Proto requires `auth_token` in every quote despite stream-level authentication
-- Consider making `auth_token` field optional in future proto versions
+Python SDK with asyncio support. See [`python-sdk/README.md`](python-sdk/README.md)
 
-## Requirements
+```bash
+cd python-sdk
+pip install -e .
+python examples/production_streaming.py
+```
 
-- Rust 1.70+
-- Tokio async runtime
-- Solana keypair for swap signing
+**Requirements:** Python 3.8+, grpcio, protobuf, solders
+
+## Environment Variables
+
+- `MM_MAKER_ID` - Your maker identifier
+- `MM_AUTH_TOKEN` - JWT authentication token
+- `RFQ_ENDPOINT` - RFQ service endpoint URL
+- `SOLANA_PRIVATE_KEY` - Base58 encoded private key (for signing)
 
 ## License
 
 MIT
+
+

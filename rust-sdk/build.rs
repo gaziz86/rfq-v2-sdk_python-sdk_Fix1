@@ -5,7 +5,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         std::env::set_var("PROTOC", protoc_path);
     }
     tonic_prost_build::compile_protos(
-        "protos/market_maker.proto",
+        "../protos/market_maker.proto",
     )?;
 
     Ok(())

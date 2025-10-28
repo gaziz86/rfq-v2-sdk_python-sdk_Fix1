@@ -64,20 +64,7 @@ impl MarketMakerClient {
         }
 
         let channel = endpoint.connect().await.map_err(|e| {
-            // Provide helpful error messages for common TLS issues
-            if let Some(source) = e.source() {
-                let error_str = source.to_string();
-                if error_str.contains("UnknownIssuer") {
-                    error!("TLS Certificate Error: Unknown Certificate Issuer");
-                    return MarketMakerError::Connection(e);
-                } else if error_str.contains("InvalidCertificate") {
-                    error!("TLS Certificate Error: Invalid Certificate");
-                    return MarketMakerError::Connection(e);
-                } else if error_str.contains("BadSignature") {
-                    error!("TLS Certificate Error: Bad Certificate Signature");
-                    return MarketMakerError::Connection(e);
-                }
-            }
+            error!("Connection error: {}", e);
             MarketMakerError::Connection(e)
         })?;
 
