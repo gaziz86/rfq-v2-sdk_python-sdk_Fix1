@@ -30,6 +30,7 @@ from .utils import (
     to_raw_volume,
     validate_keypair,
 )
+from . import swap_helpers
 
 # Re-export protobuf types for convenience
 from protos.market_maker_pb2 import (
@@ -76,6 +77,8 @@ __all__ = [
     "to_raw_price",
     "to_raw_volume",
     "validate_keypair",
+    # Helpers
+    "swap_helpers",
     # Protobuf types
     "Token",
     "TokenPair",

@@ -92,6 +92,10 @@ class QuoteStreamHandle:
             self._stats["last_activity"] = datetime.now()
             return update
 
+        except asyncio.CancelledError:
+            logger.debug("Stream read cancelled (normal during shutdown)")
+            self._is_closed = True
+            return None
         except grpc.RpcError as e:
             logger.error(f"gRPC error receiving update: {e}")
             self._stats["errors_encountered"] += 1
@@ -255,6 +259,10 @@ class SwapStreamHandle:
             self._stats["last_activity"] = datetime.now()
             return update
 
+        except asyncio.CancelledError:
+            logger.debug("Swap stream read cancelled (normal during shutdown)")
+            self._is_closed = True
+            return None
         except grpc.RpcError as e:
             logger.error(f"gRPC error receiving swap update: {e}")
             self._stats["errors_encountered"] += 1
