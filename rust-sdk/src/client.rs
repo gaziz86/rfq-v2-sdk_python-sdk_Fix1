@@ -4,7 +4,6 @@ use crate::error::{MarketMakerError, Result};
 use crate::market_maker::market_maker_ingestion_service_client::MarketMakerIngestionServiceClient;
 use crate::streaming::{QuoteStreamHandle, StreamConfig};
 use crate::types::*;
-use std::error::Error;
 use std::time::Duration;
 use tokio::sync::mpsc;
 use tokio_stream::wrappers::UnboundedReceiverStream;

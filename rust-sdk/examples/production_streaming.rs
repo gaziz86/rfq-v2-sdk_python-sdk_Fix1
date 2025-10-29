@@ -254,16 +254,18 @@ fn validate_versioned_transaction(
     Ok(())
 }
 
-/// Handle swap streaming in a dedicated task
-async fn handle_swap_stream(
+/// Run the swap streaming loop
+async fn run_swap_stream(
     mut swap_stream: market_maker_client_sdk::streaming::SwapStreamHandle,
     keypair: Keypair,
-    stream_config: StreamConfig,
-) -> market_maker_client_sdk::streaming::SwapStreamHandle {
+    stream_config: &StreamConfig,
+) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let mut swap_count = 0;
     let mut health_check_counter = 0;
     let mut last_ping_time = tokio::time::Instant::now();
     let ping_interval = Duration::from_secs(10);
+
+    info!("Swap stream started with keep-alive monitoring");
 
     loop {
         // Send periodic pings to keep connection alive
@@ -279,7 +281,10 @@ async fn handle_swap_stream(
                     info!("Sent ping to server");
                     last_ping_time = tokio::time::Instant::now();
                 }
-                Err(e) => error!("Failed to send ping: {}", e),
+                Err(e) => {
+                    error!("Failed to send ping: {}", e);
+                    break;
+                }
             }
         }
 
@@ -352,9 +357,12 @@ async fn handle_swap_stream(
 
                                 if let Err(e) = swap_stream.send_swap(market_maker_swap).await {
                                     error!("Failed to send signed tx: {}", e);
+                                    break;
                                 }
                             }
-                            Err(e) => error!("Failed to sign transaction: {}", e),
+                            Err(e) => {
+                                error!("Failed to sign transaction: {}", e);
+                            }
                         }
                     } else {
                         warn!("Received swap available message but missing swap details");
@@ -366,7 +374,10 @@ async fn handle_swap_stream(
                     );
                 }
             }
-            Ok(Ok(None)) => break,
+            Ok(Ok(None)) => {
+                info!("Swap stream closed by server");
+                break;
+            }
             Ok(Err(e)) => {
                 error!("Swap stream error: {}", e);
                 break;
@@ -378,7 +389,7 @@ async fn handle_swap_stream(
 
         // Periodic health check
         if health_check_counter >= 10 {
-            if !swap_stream.is_healthy(&stream_config).await {
+            if !swap_stream.is_healthy(stream_config).await {
                 warn!("Swap stream health check failed - possible connection issue");
             }
             health_check_counter = 0;
@@ -387,8 +398,27 @@ async fn handle_swap_stream(
         sleep(Duration::from_millis(50)).await;
     }
 
-    info!("Swap handler completed: {} swaps processed", swap_count);
-    swap_stream
+    info!("Swap stream completed: {} swaps processed", swap_count);
+
+    // Display final statistics
+    let final_stats = swap_stream.get_stats().await;
+    info!(
+        "Swap stats: {} sent, {} received, {} errors, uptime {:?}",
+        final_stats.messages_sent,
+        final_stats.updates_received,
+        final_stats.errors_encountered,
+        final_stats.connected_at.elapsed()
+    );
+
+    // Close stream
+    if let Err(e) = swap_stream
+        .close_with_timeout(Duration::from_secs(5))
+        .await
+    {
+        warn!("Swap stream close error: {}", e);
+    }
+
+    Ok(())
 }
 
 /// Run the quote streaming loop
@@ -662,11 +692,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Start swap streaming in background task
     let swap_handle = match client.start_swap_streaming().await {
         Ok(swap_stream) => {
-            info!("Swap streaming started with keep-alive monitoring");
             let keypair_clone = Keypair::try_from(&keypair.to_bytes()[..])?;
             let stream_config_clone = stream_config.clone();
             Some(tokio::spawn(async move {
-                handle_swap_stream(swap_stream, keypair_clone, stream_config_clone).await
+                run_swap_stream(swap_stream, keypair_clone, &stream_config_clone).await
             }))
         }
         Err(e) => {
@@ -689,17 +718,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Graceful shutdown - wait for swap handler to complete
     if let Some(handle) = swap_handle {
         match tokio::time::timeout(Duration::from_secs(10), handle).await {
-            Ok(Ok(mut swap_stream_final)) => {
-                let swap_stats = swap_stream_final.get_stats().await;
-                info!(
-                    "Swap stats: {} sent, {} received, {} errors",
-                    swap_stats.messages_sent,
-                    swap_stats.updates_received,
-                    swap_stats.errors_encountered,
-                );
-                let _ = swap_stream_final
-                    .close_with_timeout(Duration::from_secs(5))
-                    .await;
+            Ok(Ok(_)) => {
+                info!("Swap handler completed successfully");
             }
             Ok(Err(e)) => warn!("Swap handler task error: {}", e),
             Err(_) => warn!("Swap handler timeout"),
