@@ -1,4 +1,4 @@
-"""Setup configuration for Jupiter RFQ Market Maker SDK."""
+"""Setup configuration for Jupiter RFQv2 SDK."""
 
 from setuptools import setup, find_packages
 
@@ -10,7 +10,7 @@ setup(
     version="0.1.0",
     author="Jupiter",
     author_email="",
-    description="Python SDK for Jupiter RFQ market maker integration via gRPC streaming",
+    description="Python SDK for Jupiter RFQv2 integration via gRPC streaming",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/jup-ag/rfq-v2-sdk",

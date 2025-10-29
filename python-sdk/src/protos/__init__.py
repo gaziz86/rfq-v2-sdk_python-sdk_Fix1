@@ -1,4 +1,4 @@
-"""Generated protobuf code for Jupiter RFQ Market Maker gRPC service."""
+"""Generated protobuf code for Jupiter RFQ gRPC service."""
 
 from .market_maker_pb2 import (
     Token,

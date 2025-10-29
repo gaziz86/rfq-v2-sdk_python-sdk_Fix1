@@ -425,7 +425,7 @@ async def main():
     try:
         # Connect to the service
         async with await MarketMakerClient.connect_with_config(client_config) as client:
-            logger.info("Connected to Market Maker service")
+            logger.info("Connected to RFQv2 service")
             
             # Start quote streaming with sequence synchronization
             stream, next_sequence = await client.start_streaming_with_sync(

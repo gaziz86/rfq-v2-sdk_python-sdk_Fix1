@@ -1,4 +1,4 @@
-"""Data models and configuration for the Market Maker SDK."""
+"""Data models and configuration for the RFQv2 SDK."""
 
 from dataclasses import dataclass, field
 from datetime import timedelta
@@ -13,7 +13,7 @@ from protos.market_maker_pb2 import (
 
 @dataclass
 class ClientConfig:
-    """Configuration for connecting to the Market Maker service."""
+    """Configuration for connecting to the RFQv2 service."""
 
     endpoint: str
     timeout_secs: int = 30

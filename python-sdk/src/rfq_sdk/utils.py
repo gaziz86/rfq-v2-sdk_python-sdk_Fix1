@@ -1,4 +1,4 @@
-"""Utility functions for the Market Maker SDK."""
+"""Utility functions for the SDK."""
 
 import time
 from typing import Optional

@@ -1,4 +1,4 @@
-//! Builder patterns for creating Market Maker quotes and requests
+//! Builder patterns for creating RFQv2 quotes and requests
 
 use crate::error::{MarketMakerError, Result};
 use crate::types::*;

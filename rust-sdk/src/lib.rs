@@ -1,6 +1,6 @@
-//! # Market Maker Client SDK
+//! # RFQv2 Client SDK
 //!
-//! This SDK provides a Rust client for interacting with the Market Maker Ingestion Service.
+//! This SDK provides a Rust client for interacting with the RFQv2 Ingestion Service.
 //! It supports both regular quote submission and real-time bidirectional streaming.
 
 pub mod builders;

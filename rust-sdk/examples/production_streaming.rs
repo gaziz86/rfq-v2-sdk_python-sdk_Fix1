@@ -581,7 +581,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_target(false)
         .init();
 
-    info!("Production Streaming Example - Market Maker SDK");
+    info!("Production Streaming Example - RFQv2 SDK");
 
     // Load or generate a keypair for transaction signing
     let keypair = load_or_generate_keypair()?;
@@ -631,7 +631,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     // Configure the client with production settings for HTTPS with HTTP/2 and ALPN
-    info!("Connecting to Market Maker service...");
+    info!("Connecting to RFQv2 service...");
 
     // Get authentication token from environment or use default
     let auth_token = load_env_or_default(

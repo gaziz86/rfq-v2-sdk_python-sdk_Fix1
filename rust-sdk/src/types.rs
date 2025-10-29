@@ -1,4 +1,4 @@
-//! Type definitions and helpers for the Market Maker SDK
+//! Type definitions and helpers for the RFQv2 SDK
 
 use chrono::Utc;
 
@@ -9,7 +9,7 @@ pub use crate::market_maker::{
     TokenPair, UpdateType,
 };
 
-/// Configuration for connecting to the Market Maker service
+/// Configuration for connecting to the RFQv2 service
 #[derive(Debug, Clone)]
 pub struct ClientConfig {
     /// Service endpoint URL

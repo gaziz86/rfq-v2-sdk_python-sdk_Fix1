@@ -1,4 +1,4 @@
-"""Main client implementation for the Market Maker SDK."""
+"""Main client implementation for the RFQv2 SDK."""
 
 import asyncio
 import logging
@@ -18,11 +18,11 @@ logger = logging.getLogger(__name__)
 
 
 class MarketMakerClient:
-    """Main client for interacting with the Market Maker Ingestion Service."""
+    """Main client for interacting with the RFQv2."""
 
     def __init__(self, config: ClientConfig):
         """
-        Initialize the Market Maker client.
+        Initialize the RFQv2 client.
 
         Args:
             config: Client configuration including endpoint and auth settings
@@ -44,7 +44,7 @@ class MarketMakerClient:
     @classmethod
     async def connect(cls, endpoint: str, auth_token: Optional[str] = None) -> "MarketMakerClient":
         """
-        Connect to the Market Maker service with default configuration.
+        Connect to the RFQv2 service with default configuration.
 
         Args:
             endpoint: gRPC service endpoint URL
@@ -60,7 +60,7 @@ class MarketMakerClient:
     @classmethod
     async def connect_with_config(cls, config: ClientConfig) -> "MarketMakerClient":
         """
-        Connect to the Market Maker service with custom configuration.
+        Connect to the RFQv2 service with custom configuration.
 
         Args:
             config: Client configuration
@@ -68,7 +68,7 @@ class MarketMakerClient:
         Returns:
             Connected MarketMakerClient instance
         """
-        logger.info(f"Connecting to Market Maker service at {config.endpoint}")
+        logger.info(f"Connecting to RFQv2 service at {config.endpoint}")
         client = cls(config)
         await client._establish_connection()
         return client
@@ -97,7 +97,7 @@ class MarketMakerClient:
             )
 
         self._stub = MarketMakerIngestionServiceStub(self._channel)
-        logger.debug("Successfully connected to Market Maker service")
+        logger.debug("Successfully connected to RFQv2 service")
 
     def _get_metadata(self) -> list:
         """Get metadata with authentication token if available."""
@@ -107,7 +107,7 @@ class MarketMakerClient:
             logger.debug("Added authentication token to request metadata")
         return metadata
 
-    async def start_streaming(
+    async def start_quote_streaming(
         self, config: Optional[StreamConfig] = None
     ) -> QuoteStreamHandle:
         """
@@ -202,7 +202,7 @@ class MarketMakerClient:
         Get the last sequence number for a maker (for synchronization before streaming).
 
         Args:
-            maker_id: Market maker identifier
+            maker_id: RFQv2 identifier
             auth_token: Authentication token
 
         Returns:
@@ -264,7 +264,7 @@ class MarketMakerClient:
             logger.error(f"gRPC error getting orderbooks: {e}")
             raise
 
-    async def start_streaming_with_sync(
+    async def start_quote_streaming_with_sync(
         self,
         maker_id: str,
         auth_token: str,
@@ -274,7 +274,7 @@ class MarketMakerClient:
         Start streaming with automatic sequence number synchronization.
 
         Args:
-            maker_id: Market maker identifier
+            maker_id: RFQv2 identifier
             auth_token: Authentication token
             stream_config: Optional stream configuration
 
@@ -286,7 +286,7 @@ class MarketMakerClient:
         )
 
         last_sequence = await self.get_last_sequence_number(maker_id, auth_token)
-        stream_handle = await self.start_streaming(stream_config)
+        stream_handle = await self.start_quote_streaming(stream_config)
         next_sequence = last_sequence + 1
 
         logger.debug(

@@ -1,3 +1,3 @@
-//! Helper utilities for the Market Maker Client SDK
+//! Helper utilities for the Client SDK
 
 pub mod birdeye;

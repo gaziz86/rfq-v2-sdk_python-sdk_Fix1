@@ -1,9 +1,9 @@
 use thiserror::Error;
 
-/// Result type for Market Maker SDK operations
+/// Result type for RFQv2 SDK operations
 pub type Result<T> = std::result::Result<T, MarketMakerError>;
 
-/// Comprehensive error types for the Market Maker SDK
+/// Comprehensive error types for the RFQv2 SDK
 #[derive(Error, Debug)]
 pub enum MarketMakerError {
     /// Connection-related errors

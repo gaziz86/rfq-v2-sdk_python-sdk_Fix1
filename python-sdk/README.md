@@ -1,6 +1,6 @@
-# Jupiter RFQ Market Maker Python SDK
+# Jupiter RFQ Python SDK
 
-Python SDK for Jupiter RFQ market maker integration via gRPC streaming.
+Python SDK for Jupiter RFQ integration via gRPC streaming.
 
 ## Installation
 

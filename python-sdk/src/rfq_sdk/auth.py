@@ -1,4 +1,4 @@
-"""Authentication helpers for the Market Maker SDK."""
+"""Authentication helpers for the SDK."""
 
 import os
 from typing import Optional
