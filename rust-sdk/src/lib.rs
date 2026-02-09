@@ -6,12 +6,16 @@
 pub mod builders;
 pub mod client;
 pub mod error;
+pub mod reflection;
 pub mod streaming;
 pub mod types;
 
 pub mod market_maker {
     tonic::include_proto!("market_maker");
 }
+
+pub const FILE_DESCRIPTOR_SET: &[u8] =
+    include_bytes!(concat!(env!("OUT_DIR"), "/market_maker_descriptor.bin"));
 
 // Re-export main types for convenience
 pub use builders::*;

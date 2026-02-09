@@ -45,6 +45,9 @@ impl MarketMakerClient {
     pub async fn connect_with_config(config: ClientConfig) -> Result<Self> {
         info!("Connecting to RFQv2 service at {}", config.endpoint);
 
+        // Ensure a rustls CryptoProvider is available for TLS connections
+        let _ = rustls::crypto::ring::default_provider().install_default();
+
         let mut endpoint = Endpoint::try_from(config.endpoint.clone())
             .map_err(|e| MarketMakerError::configuration(format!("Invalid endpoint: {}", e)))?
             .timeout(Duration::from_secs(config.timeout_secs));
@@ -294,5 +297,33 @@ impl MarketMakerClient {
         info!("Connected for: {:?}", stats.connected_at.elapsed());
 
         Self::shutdown_stream_with_timeout(stream, timeout).await
+    }
+}
+
+/// gRPC server reflection methods
+impl MarketMakerClient {
+    /// Create a [`ReflectionHandle`](crate::reflection::ReflectionHandle) bound to this client's endpoint.
+    ///
+    /// The handle is cheap to create and will open a reflection connection on demand.
+    pub fn reflection(&self) -> crate::reflection::ReflectionHandle {
+        crate::reflection::ReflectionHandle::new(self.config.endpoint.clone())
+    }
+
+    /// List all gRPC services advertised by the server via reflection.
+    #[instrument(skip(self))]
+    pub async fn list_services(&mut self) -> Result<Vec<String>> {
+        info!("Querying server reflection for available services");
+        let client = crate::reflection::ReflectionClient::connect(self.config.endpoint.clone()).await?;
+        client.list_services().await
+    }
+
+    /// Verify that the expected `MarketMakerIngestionService` is available on the server.
+    ///
+    /// Returns detailed [`ServiceInfo`](crate::reflection::ServiceInfo) if found.
+    #[instrument(skip(self))]
+    pub async fn verify_service(&mut self) -> Result<crate::reflection::ServiceInfo> {
+        info!("Verifying MarketMakerIngestionService availability via reflection");
+        let client = crate::reflection::ReflectionClient::connect(self.config.endpoint.clone()).await?;
+        client.verify_market_maker_service().await
     }
 }

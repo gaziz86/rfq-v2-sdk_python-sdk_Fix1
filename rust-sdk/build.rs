@@ -4,9 +4,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     unsafe {
         std::env::set_var("PROTOC", protoc_path);
     }
-    tonic_prost_build::compile_protos(
-        "../protos/market_maker.proto",
-    )?;
+
+    // Emit file descriptor set for gRPC server reflection support
+    let out_dir = std::path::PathBuf::from(std::env::var("OUT_DIR").unwrap());
+    tonic_prost_build::configure()
+        .file_descriptor_set_path(out_dir.join("market_maker_descriptor.bin"))
+        .compile_protos(&["../protos/market_maker.proto"], &["../protos"])?;
 
     Ok(())
 }
