@@ -186,6 +186,36 @@ impl MarketMakerClient {
         }
     }
 
+    /// Get quotes for a specific token pair
+    #[instrument(skip(self))]
+    pub async fn get_quotes(
+        &mut self,
+        token_pair: TokenPair,
+        auth_token: String,
+    ) -> Result<GetQuotesResponse> {
+        debug!("Getting quotes for token pair");
+        use crate::market_maker::GetQuotesRequest;
+        let request = Request::new(GetQuotesRequest {
+            token_pair,
+            auth_token,
+        });
+
+        let response = self
+            .inner
+            .get_quotes(request)
+            .await
+            .map_err(MarketMakerError::Grpc)?;
+
+        let quotes_response = response.into_inner();
+
+        info!(
+            "Retrieved {} quotes",
+            quotes_response.quotes.len()
+        );
+
+        Ok(quotes_response)
+    }
+
     /// Receive an update containing all orderbooks for a specific cluster or all clusters
     #[instrument(skip(self))]
     pub async fn receive_update(
@@ -325,5 +355,140 @@ impl MarketMakerClient {
         info!("Verifying MarketMakerIngestionService availability via reflection");
         let client = crate::reflection::ReflectionClient::connect(self.config.endpoint.clone()).await?;
         client.verify_market_maker_service().await
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::market_maker::market_maker_ingestion_service_server::{
+        MarketMakerIngestionService, MarketMakerIngestionServiceServer,
+    };
+    use crate::market_maker::*;
+    use tokio_stream::wrappers::ReceiverStream;
+    use tonic::{Request, Response, Status};
+
+    /// Minimal mock server that only implements GetQuotes
+    struct MockService;
+
+    #[tonic::async_trait]
+    impl MarketMakerIngestionService for MockService {
+        async fn get_last_sequence_number(
+            &self,
+            _req: Request<SequenceNumberRequest>,
+        ) -> std::result::Result<Response<SequenceNumberResponse>, Status> {
+            unimplemented!()
+        }
+
+        async fn get_all_orderbooks(
+            &self,
+            _req: Request<GetAllOrderbooksRequest>,
+        ) -> std::result::Result<Response<GetAllOrderbooksResponse>, Status> {
+            unimplemented!()
+        }
+
+        type StreamQuotesStream = ReceiverStream<std::result::Result<QuoteUpdate, Status>>;
+
+        async fn stream_quotes(
+            &self,
+            _req: Request<tonic::Streaming<MarketMakerQuote>>,
+        ) -> std::result::Result<Response<Self::StreamQuotesStream>, Status> {
+            unimplemented!()
+        }
+
+        type StreamSwapStream = ReceiverStream<std::result::Result<SwapUpdate, Status>>;
+
+        async fn stream_swap(
+            &self,
+            _req: Request<tonic::Streaming<MarketMakerSwap>>,
+        ) -> std::result::Result<Response<Self::StreamSwapStream>, Status> {
+            unimplemented!()
+        }
+
+        async fn get_quotes(
+            &self,
+            req: Request<GetQuotesRequest>,
+        ) -> std::result::Result<Response<GetQuotesResponse>, Status> {
+            let inner = req.into_inner();
+            // Echo back a single fake quote for the requested pair
+            let quote = MarketMakerQuote {
+                timestamp: 1_000_000,
+                sequence_number: 1,
+                quote_expiry_time: 30_000_000,
+                maker_id: "test-maker".to_string(),
+                maker_address: "11111111111111111111111111111111".to_string(),
+                lot_size_base: 1000,
+                cluster: Cluster::Mainnet as i32,
+                token_pair: inner.token_pair,
+                bid_levels: vec![PriceLevel {
+                    volume: 1_000_000_000,
+                    price: 150_000_000,
+                }],
+                ask_levels: vec![PriceLevel {
+                    volume: 1_000_000_000,
+                    price: 151_000_000,
+                }],
+            };
+            Ok(Response::new(GetQuotesResponse {
+                quotes: vec![quote],
+            }))
+        }
+    }
+
+    /// Spin up a mock gRPC server on a random port and return the client.
+    async fn setup_test_client() -> MarketMakerClient {
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let addr = listener.local_addr().unwrap();
+
+        tokio::spawn(async move {
+            let incoming = tokio_stream::wrappers::TcpListenerStream::new(listener);
+            tonic::transport::Server::builder()
+                .add_service(MarketMakerIngestionServiceServer::new(MockService))
+                .serve_with_incoming(incoming)
+                .await
+                .unwrap();
+        });
+
+        // Give the server a moment to start
+        tokio::time::sleep(std::time::Duration::from_millis(50)).await;
+
+        MarketMakerClient::connect(format!("http://{}", addr))
+            .await
+            .expect("failed to connect to mock server")
+    }
+
+    #[tokio::test]
+    async fn test_get_quotes_returns_quotes() {
+        let mut client = setup_test_client().await;
+        let pair = TokenPair::sol_usdc();
+
+        let resp = client
+            .get_quotes(pair, "test-token".to_string())
+            .await
+            .expect("get_quotes should succeed");
+
+        assert_eq!(resp.quotes.len(), 1);
+        let quote = &resp.quotes[0];
+        assert_eq!(quote.maker_id, "test-maker");
+        assert_eq!(quote.bid_levels.len(), 1);
+        assert_eq!(quote.ask_levels.len(), 1);
+        assert_eq!(quote.bid_levels[0].price, 150_000_000);
+        assert_eq!(quote.ask_levels[0].price, 151_000_000);
+    }
+
+    #[tokio::test]
+    async fn test_get_quotes_preserves_token_pair() {
+        let mut client = setup_test_client().await;
+        let pair = TokenPair::eth_usdc();
+
+        let resp = client
+            .get_quotes(pair.clone(), "test-token".to_string())
+            .await
+            .expect("get_quotes should succeed");
+
+        // The mock echoes back the requested token pair
+        let returned_pair = &resp.quotes[0].token_pair;
+        assert_eq!(returned_pair.base_token.symbol, "ETH");
+        assert_eq!(returned_pair.quote_token.symbol, "USDC");
     }
 }

@@ -64,7 +64,26 @@ service MarketMakerIngestionService {
 
     // Stream swaps (bidirectional streaming)
     rpc StreamSwap(stream MarketMakerSwap) returns (stream SwapUpdate);
+
+    rpc GetQuotes(GetQuotesRequest) returns (GetQuotesResponse);
 }
+
+// Response for quote submission
+message QuoteResponse {
+    required bool success = 1;
+    required string message = 2;
+    required uint64 quote_id = 3;
+}
+// Request to get quotes for a specific token pair
+message GetQuotesRequest {
+    required TokenPair token_pair = 1;  // Required: token pair to get quotes for
+    required string auth_token = 2;  // Requred: authentication token
+}
+// Response containing quotes
+message GetQuotesResponse {
+    repeated MarketMakerQuote quotes = 1;
+}
+
 
 // Request to get the last sequence number for a maker
 message SequenceNumberRequest {

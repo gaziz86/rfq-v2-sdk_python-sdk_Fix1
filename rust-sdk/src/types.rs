@@ -4,7 +4,8 @@ use chrono::Utc;
 
 // Re-export the generated types for convenience
 pub use crate::market_maker::{
-    Cluster, GetAllOrderbooksRequest, GetAllOrderbooksResponse, MarketMakerQuote, MarketMakerSwap, Orderbook, PriceLevel,
+    Cluster, GetAllOrderbooksRequest, GetAllOrderbooksResponse, GetQuotesRequest,
+    GetQuotesResponse, MarketMakerQuote, MarketMakerSwap, Orderbook, PriceLevel, QuoteResponse,
     QuoteUpdate, SequenceNumberRequest, SequenceNumberResponse, SwapMessageType, SwapUpdate, Token,
     TokenPair, UpdateType,
 };
