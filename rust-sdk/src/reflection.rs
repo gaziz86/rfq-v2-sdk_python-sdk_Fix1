@@ -42,9 +42,7 @@ impl ReflectionHandle {
     }
 
     /// Convenience: verify the MarketMaker service in one shot
-    pub async fn verify_market_maker_service(
-        &self,
-    ) -> Result<ServiceInfo> {
+    pub async fn verify_market_maker_service(&self) -> Result<ServiceInfo> {
         self.connect().await?.verify_market_maker_service().await
     }
 }
@@ -103,10 +101,7 @@ impl ReflectionClient {
     /// Connect to a gRPC server's reflection service
     pub async fn connect<S: Into<String>>(endpoint: S) -> Result<Self> {
         let endpoint_str: String = endpoint.into();
-        info!(
-            "Connecting to gRPC reflection service at {}",
-            endpoint_str
-        );
+        info!("Connecting to gRPC reflection service at {}", endpoint_str);
         let _ = rustls::crypto::ring::default_provider().install_default();
 
         let mut ep = Endpoint::try_from(endpoint_str.clone())
@@ -142,8 +137,7 @@ impl ReflectionClient {
 
         match response {
             MessageResponse::ListServicesResponse(list) => {
-                let services: Vec<String> =
-                    list.service.into_iter().map(|s| s.name).collect();
+                let services: Vec<String> = list.service.into_iter().map(|s| s.name).collect();
                 debug!("Discovered {} services", services.len());
                 Ok(services)
             }
@@ -186,10 +180,7 @@ impl ReflectionClient {
     /// Get detailed information about a service, including its methods and their types
     pub async fn get_service_info(&self, service_name: &str) -> Result<ServiceInfo> {
         let file_descriptors = self.file_descriptor_by_symbol(service_name).await?;
-        let short_name = service_name
-            .rsplit('.')
-            .next()
-            .unwrap_or(service_name);
+        let short_name = service_name.rsplit('.').next().unwrap_or(service_name);
 
         for fd in &file_descriptors {
             for service in &fd.service {
@@ -209,10 +200,7 @@ impl ReflectionClient {
     pub async fn get_message_info(&self, message_name: &str) -> Result<MessageInfo> {
         let file_descriptors = self.file_descriptor_by_symbol(message_name).await?;
 
-        let short_name = message_name
-            .rsplit('.')
-            .next()
-            .unwrap_or(message_name);
+        let short_name = message_name.rsplit('.').next().unwrap_or(message_name);
 
         for fd in &file_descriptors {
             if let Some(info) = Self::find_message_in_file(short_name, fd) {

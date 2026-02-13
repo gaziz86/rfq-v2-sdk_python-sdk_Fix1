@@ -67,3 +67,7 @@ path = "examples/production_streaming.rs"
 [[example]]
 name = "reflection_cli"
 path = "examples/reflection_cli.rs"
+
+[[example]]
+name = "deploy_spl_token"
+path = "examples/deploy_spl_token.rs"

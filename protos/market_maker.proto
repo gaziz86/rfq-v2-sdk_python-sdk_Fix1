@@ -101,6 +101,7 @@ message SequenceNumberResponse {
 // Quote update notification
 message QuoteUpdate {
     required UpdateType update_type = 1;
+    optional string status_message = 2;   // Human-readable detail (present for REJECTED)
 }
 
 message SwapUpdate {
@@ -127,6 +128,7 @@ enum UpdateType {
     UPDATE_TYPE_NEW = 1;
     UPDATE_TYPE_UPDATED = 2;
     UPDATE_TYPE_EXPIRED = 3;
+    UPDATE_TYPE_REJECTED = 4;     // Quote failed validation (see status_message)
 }
 
 // Orderbook for a specific token pair

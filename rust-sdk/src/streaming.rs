@@ -322,8 +322,6 @@ impl ConnectionStats {
     }
 }
 
-
-
 /// Helper functions for working with quote updates
 pub mod update_helpers {
     use super::*;
@@ -347,6 +345,17 @@ pub mod update_helpers {
     /// Check if an update represents an expired quote
     pub fn is_expired_quote(update: &QuoteUpdate) -> bool {
         update.update_type == UpdateType::Expired as i32
+    }
+
+
+    /// Check if an update represents a rejected quote (validation/storage failure)
+    pub fn is_rejected_quote(update: &QuoteUpdate) -> bool {
+        update.update_type == UpdateType::Rejected as i32
+    }
+
+    /// Get the status message from a quote update (present on REJECTED updates)
+    pub fn get_status_message(update: &QuoteUpdate) -> Option<&str> {
+        update.status_message.as_deref()
     }
 
     /// Get a human-readable description of the update type
@@ -539,7 +548,7 @@ impl SwapStreamHandle {
     /// Check connection health based on activity
     pub async fn is_healthy(&self, config: &StreamConfig) -> bool {
         let stats = self.stats.lock().await;
-        
+
         if let Some(duration) = stats.time_since_last_activity() {
             duration <= config.inactivity_timeout
         } else {
@@ -595,8 +604,6 @@ impl SwapStreamHandle {
         *stats = SwapStats::new();
     }
 }
-
-
 
 /// Type alias for SwapStats - uses the generic ConnectionStats
 pub type SwapStats = ConnectionStats;
