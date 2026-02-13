@@ -650,7 +650,7 @@ async fn run_quote_stream(
             .sequence_number(next_sequence)
             .expiry_time_secs(2)
             .maker_address(maker_address.to_string())
-            .lot_size_base(10u64.pow(SPL_TOKEN_DECIMALS - 3)); // lot size scaled to token decimals
+            .lot_size_base(10u64.pow(SPL_TOKEN_DECIMALS - PRICE_DECIMALS)); // 10^(base_decimals - quote_decimals)
 
         let (spl_quote_builder, spl_min_bid, spl_max_ask) =
             build_volume_tiers(spl_quote_builder, spl_token_price);
