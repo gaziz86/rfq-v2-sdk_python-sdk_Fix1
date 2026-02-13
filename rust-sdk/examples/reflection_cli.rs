@@ -266,18 +266,9 @@ async fn cmd_inspect(client: &ReflectionClient) {
                 (false, true) => "[server-stream] ",
                 (false, false) => "",
             };
-            println!(
-                "{branch} {streaming}{}",
-                method.name
-            );
-            println!(
-                "{cont}     request:  {}",
-                short_type(&method.input_type)
-            );
-            println!(
-                "{cont}     response: {}",
-                short_type(&method.output_type)
-            );
+            println!("{branch} {streaming}{}", method.name);
+            println!("{cont}     request:  {}", short_type(&method.input_type));
+            println!("{cont}     response: {}", short_type(&method.output_type));
         }
         println!();
     }

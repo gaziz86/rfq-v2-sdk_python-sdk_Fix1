@@ -104,7 +104,7 @@ impl MarketMakerQuoteBuilder {
 
     /// Set quote expiry time in seconds
     pub fn expiry_time_secs(mut self, secs: u64) -> Self {
-        self.quote_expiry_time = secs * 1_000_000;
+        self.quote_expiry_time = secs;
         self
     }
 

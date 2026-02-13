@@ -50,7 +50,19 @@ impl MarketMakerClient {
 
         let mut endpoint = Endpoint::try_from(config.endpoint.clone())
             .map_err(|e| MarketMakerError::configuration(format!("Invalid endpoint: {}", e)))?
-            .timeout(Duration::from_secs(config.timeout_secs));
+            .timeout(Duration::from_secs(config.timeout_secs))
+            // HTTP/2 keepalive: send PINGs every 10s to prevent load balancers
+            // and reverse proxies from dropping idle streaming connections.
+            .http2_keep_alive_interval(Duration::from_secs(10))
+            // If the server does not respond to a keepalive PING within 20s,
+            // consider the connection dead.
+            .keep_alive_timeout(Duration::from_secs(20))
+            // Send keepalive PINGs even when there are no active RPCs. This is
+            // critical for long-lived bidirectional streams that may have idle
+            // periods on one direction.
+            .keep_alive_while_idle(true)
+            // Enable TCP keepalive as a secondary safeguard.
+            .tcp_keepalive(Some(Duration::from_secs(60)));
 
         if config.endpoint.starts_with("https://") {
             debug!("Configuring HTTPS connection with HTTP/2 over TLS and ALPN");
@@ -208,10 +220,7 @@ impl MarketMakerClient {
 
         let quotes_response = response.into_inner();
 
-        info!(
-            "Retrieved {} quotes",
-            quotes_response.quotes.len()
-        );
+        info!("Retrieved {} quotes", quotes_response.quotes.len());
 
         Ok(quotes_response)
     }
@@ -343,7 +352,8 @@ impl MarketMakerClient {
     #[instrument(skip(self))]
     pub async fn list_services(&mut self) -> Result<Vec<String>> {
         info!("Querying server reflection for available services");
-        let client = crate::reflection::ReflectionClient::connect(self.config.endpoint.clone()).await?;
+        let client =
+            crate::reflection::ReflectionClient::connect(self.config.endpoint.clone()).await?;
         client.list_services().await
     }
 
@@ -353,7 +363,8 @@ impl MarketMakerClient {
     #[instrument(skip(self))]
     pub async fn verify_service(&mut self) -> Result<crate::reflection::ServiceInfo> {
         info!("Verifying MarketMakerIngestionService availability via reflection");
-        let client = crate::reflection::ReflectionClient::connect(self.config.endpoint.clone()).await?;
+        let client =
+            crate::reflection::ReflectionClient::connect(self.config.endpoint.clone()).await?;
         client.verify_market_maker_service().await
     }
 }
