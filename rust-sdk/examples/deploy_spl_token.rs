@@ -5,12 +5,12 @@
 //!
 //! # Prerequisites
 //! - A funded Solana keypair (set via `SOLANA_KEYPAIR` env var as base58 or path to JSON file)
-//! - An RPC endpoint (set via `SOLANA_RPC_URL` env var, defaults to devnet)
+//! - An RPC endpoint (set via `SOLANA_RPC_URL` env var, defaults to mainnet)
 //!
 //! # Usage
 //! ```bash
 //! SOLANA_KEYPAIR=<base58_private_key_or_path> \
-//! SOLANA_RPC_URL=https://api.devnet.solana.com \
+//! SOLANA_RPC_URL=https://api.mainnet-beta.solana.com \
 //! cargo run --example deploy_spl_token
 //! ```
 
@@ -341,7 +341,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Load configuration from environment
     let rpc_url =
-        std::env::var("SOLANA_RPC_URL").unwrap_or_else(|_| "https://api.devnet.solana.com".into());
+        std::env::var("SOLANA_RPC_URL").unwrap_or_else(|_| "https://api.mainnet-beta.solana.com".into());
     let keypair_str = std::env::var("SOLANA_KEYPAIR")
         .expect("SOLANA_KEYPAIR env var is required (base58 private key or path to JSON file)");
 
@@ -412,7 +412,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         error!("Failed to confirm mint creation transaction");
         return Err("Mint creation not confirmed".into());
     }
-    info!("✅ Mint account created successfully!");
+    info!("Mint account created successfully!");
 
     // ---------------------------------------------------------------
     // Step 2: Create an Associated Token Account (ATA)
@@ -442,7 +442,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         error!("Failed to confirm ATA creation transaction");
         return Err("ATA creation not confirmed".into());
     }
-    info!("✅ Associated token account created!");
+    info!("Associated token account created!");
 
     // ---------------------------------------------------------------
     // Step 3: Mint initial supply
@@ -469,13 +469,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         error!("Failed to confirm mint-to transaction");
         return Err("Mint-to not confirmed".into());
     }
-    info!("✅ Initial supply minted!");
+    info!("Initial supply minted!");
 
     // ---------------------------------------------------------------
     // Summary
     // ---------------------------------------------------------------
     info!("\n========================================");
-    info!("  🎉 SPL Token Deployed Successfully!");
+    info!("  SPL Token Deployed Successfully!");
     info!("========================================");
     info!("  Mint address     : {}", mint_pubkey);
     info!("  Token account    : {}", ata);
@@ -488,7 +488,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     );
     info!("========================================");
     info!(
-        "  Explorer: https://explorer.solana.com/address/{}?cluster=devnet",
+        "  Explorer: https://explorer.solana.com/address/{}",
         mint_pubkey
     );
     info!("========================================");
