@@ -3,16 +3,6 @@
 //! This example demonstrates how to create and deploy a new SPL token (mint),
 //! create an associated token account, and mint an initial supply.
 //!
-//! # Prerequisites
-//! - A funded Solana keypair (set via `SOLANA_KEYPAIR` env var as base58 or path to JSON file)
-//! - An RPC endpoint (set via `SOLANA_RPC_URL` env var, defaults to mainnet)
-//!
-//! # Usage
-//! ```bash
-//! SOLANA_KEYPAIR=<base58_private_key_or_path> \
-//! SOLANA_RPC_URL=https://api.mainnet-beta.solana.com \
-//! cargo run --example deploy_spl_token
-//! ```
 
 use base64::Engine;
 use solana_sdk::{
@@ -340,8 +330,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .init();
 
     // Load configuration from environment
-    let rpc_url =
-        std::env::var("SOLANA_RPC_URL").unwrap_or_else(|_| "https://api.mainnet-beta.solana.com".into());
+    let rpc_url = std::env::var("SOLANA_RPC_URL")
+        .unwrap_or_else(|_| "https://api.mainnet-beta.solana.com".into());
     let keypair_str = std::env::var("SOLANA_KEYPAIR")
         .expect("SOLANA_KEYPAIR env var is required (base58 private key or path to JSON file)");
 

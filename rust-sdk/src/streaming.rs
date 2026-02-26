@@ -347,7 +347,6 @@ pub mod update_helpers {
         update.update_type == UpdateType::Expired as i32
     }
 
-
     /// Check if an update represents a rejected quote (validation/storage failure)
     pub fn is_rejected_quote(update: &QuoteUpdate) -> bool {
         update.update_type == UpdateType::Rejected as i32
