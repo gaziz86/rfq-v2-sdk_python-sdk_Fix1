@@ -47,6 +47,7 @@ bincode = "1.3"
 bs58 = "0.5"
 reqwest = { version = "0.11", features = ["json"] }
 fastrand = "2.0"
+fill-decoder = { path = "../fill-decoder" }
 
 [build-dependencies]
 tonic-prost-build = "0.14"

@@ -921,6 +921,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "28dea519a9695b9977216879a3ebfddf92f1c08c05d984f8996aecd6ecdc811d"
 
 [[package]]
+name = "fill-decoder"
+version = "0.1.0"
+dependencies = [
+ "base64 0.21.7",
+ "borsh 1.5.7",
+ "bs58",
+ "thiserror 1.0.69",
+]
+
+[[package]]
 name = "five8"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1752,6 +1762,7 @@ dependencies = [
  "bs58",
  "chrono",
  "fastrand",
+ "fill-decoder",
  "futures",
  "prost",
  "prost-types",
