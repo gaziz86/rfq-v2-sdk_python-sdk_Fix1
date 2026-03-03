@@ -14,6 +14,7 @@ use std::env;
 
 pub const USDC_MINT: &str = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
 pub const SOL_MINT: &str = "So11111111111111111111111111111111111111112";
+pub const SPL_TOKEN_MINT: &str = "A3QAoKnf3jFcCfTGvEpE7KVBMZqXQJwvwt6Uc4UExkDp";
 
 // ---------------------------------------------------------------------------
 // Defaults
@@ -60,8 +61,7 @@ impl TestConfig {
 
         let taker = env::var("TAKER").unwrap_or_else(|_| keypair.pubkey().to_string());
 
-        let auth_token =
-            env::var("MM_AUTH_TOKEN").expect("MM_AUTH_TOKEN env var is required");
+        let auth_token = env::var("MM_AUTH_TOKEN").expect("MM_AUTH_TOKEN env var is required");
 
         Self {
             grpc_endpoint: env::var("GRPC_ENDPOINT")
@@ -110,7 +110,10 @@ pub fn sign_transaction(
             format!(
                 "Taker pubkey {} not found in transaction account keys: {:?}",
                 taker_pubkey,
-                account_keys.iter().map(|k| k.to_string()).collect::<Vec<_>>()
+                account_keys
+                    .iter()
+                    .map(|k| k.to_string())
+                    .collect::<Vec<_>>()
             )
         })?;
 
