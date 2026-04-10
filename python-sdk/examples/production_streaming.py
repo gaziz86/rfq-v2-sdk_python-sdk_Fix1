@@ -391,8 +391,8 @@ async def update_listener_task(stream):
 async def main():
     """Main production streaming example with swap signing."""
     # Get configuration from environment
-    maker_id = get_maker_id_from_env()
-    auth_token = get_auth_token_from_env()
+    maker_id = os.getenv("MM_MAKER_ID", "production_maker")
+    auth_token = os.getenv("MM_AUTH_TOKEN", "production_jwt_token")
     
     if not maker_id or not auth_token:
         logger.error("Missing required environment variables:")
