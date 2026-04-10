@@ -428,7 +428,7 @@ async def main():
             logger.info("Connected to RFQv2 service")
             
             # Start quote streaming with sequence synchronization
-            stream, next_sequence = await client.start_streaming_with_sync(
+            stream, next_sequence = await client.start_quote_streaming_with_sync(
                 maker_id=maker_id,
                 auth_token=auth_token,
                 stream_config=stream_config
